@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/
+
+# Local environments
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# Heavy data and training artifacts
+data/raw/
+data/processed/
+outputs/
+checkpoints/
+wandb/
+runs/
+work_dirs/
+*.pth
+*.pt
+*.onnx
+*.engine
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

@@ -1,0 +1,17 @@
+experiment_name: csl_retinanet_r50_dota1
+adapter: mmrotate
+algorithm: csl
+dataset:
+  name: DOTA-v1.0
+  root: data/raw/DOTA-v1.0
+  split_root: data/processed/DOTA-v1.0/split_ss_1024_200
+training:
+  epochs: 12
+  gpus: 1
+  launcher: none
+  work_dir: outputs/mmrotate/csl_retinanet_r50_dota1
+evaluation:
+  metric: mAP
+  checkpoint: outputs/mmrotate/csl_retinanet_r50_dota1/latest.pth
+report:
+  group: mmrotate_baselines
