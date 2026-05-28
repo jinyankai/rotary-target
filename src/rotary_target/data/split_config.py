@@ -13,8 +13,8 @@ def build_mmrotate_split_configs(
     gap: int = 200,
     nproc: int = 10,
 ) -> dict[str, dict[str, Any]]:
-    raw = Path(raw_root).resolve()
-    out = Path(out_root).resolve()
+    raw = Path(raw_root).expanduser().resolve()
+    out = Path(out_root).expanduser().resolve()
     common = {
         "nproc": nproc,
         "sizes": [tile_size],
@@ -26,6 +26,8 @@ def build_mmrotate_split_configs(
         "padding_value": [104, 116, 124],
         "save_ext": ".png",
     }
+    train_label = _find_label_dir(raw / "train")
+    val_label = _find_label_dir(raw / "val")
     return {
         "trainval": {
             **common,
@@ -34,8 +36,8 @@ def build_mmrotate_split_configs(
                 _slash(raw / "val" / "images"),
             ],
             "ann_dirs": [
-                _slash(raw / "train" / "labelTxt"),
-                _slash(raw / "val" / "labelTxt"),
+                _slash(train_label),
+                _slash(val_label),
             ],
             "save_dir": _slash(out / "trainval"),
         },
@@ -57,6 +59,15 @@ def write_mmrotate_split_configs(configs: dict[str, dict[str, Any]], config_dir:
         path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
         written[name] = path
     return written
+
+
+def _find_label_dir(split_dir: Path) -> Path:
+    """Find the label directory under a split (train/val), trying common names."""
+    for name in ["labelTxt-v1.0", "labelTxt"]:
+        candidate = split_dir / name
+        if candidate.exists():
+            return candidate
+    return split_dir / "labelTxt-v1.0"
 
 
 def _slash(path: Path) -> str:
