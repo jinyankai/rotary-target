@@ -106,7 +106,7 @@ def validate_label_file(path: str | Path) -> LabelFileReport:
 
 
 def validate_dota_root(root: str | Path, *, max_label_files: int = 50) -> DotaValidationReport:
-    root_path = Path(root)
+    root_path = Path(root).expanduser().resolve()
     report = DotaValidationReport(root=root_path, exists=root_path.exists())
     if not report.exists:
         report.warnings.append("DOTA root does not exist yet. Download is intentionally out of scope.")
@@ -115,8 +115,11 @@ def validate_dota_root(root: str | Path, *, max_label_files: int = 50) -> DotaVa
     expected_dirs = [
         root_path / "train" / "images",
         root_path / "val" / "images",
-        root_path / "test" / "images",
     ]
+    test_images = root_path / "test" / "images"
+    if test_images.exists():
+        expected_dirs.append(test_images)
+
     for directory in expected_dirs:
         if not directory.exists():
             report.errors.append(f"Missing expected DOTA directory: {directory}")
