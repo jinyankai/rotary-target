@@ -143,7 +143,17 @@ def validate_dota_root(root: str | Path, *, max_label_files: int = 50) -> DotaVa
         label_files.extend(sorted(label_dir.glob("*.txt")))
 
     if not label_files:
-        report.errors.append("No DOTA labelTxt files found under train/val.")
+        zip_files: list[Path] = []
+        for label_dir in label_dirs:
+            zip_files.extend(label_dir.glob("*.zip"))
+        if zip_files:
+            names = ", ".join(z.name for z in zip_files[:4])
+            report.errors.append(
+                f"Label directories contain unextracted zip files ({names}). "
+                f"Please unzip them first: cd <labelTxt-v1.0> && unzip labelTxt.zip"
+            )
+        else:
+            report.errors.append("No DOTA labelTxt files found under train/val.")
         return report
 
     for label_path in label_files[:max_label_files]:
