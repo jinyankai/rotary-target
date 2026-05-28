@@ -10,14 +10,14 @@
 
 | 组件 | 最低要求 | 推荐配置 |
 |------|----------|----------|
-| GPU | NVIDIA GPU，显存 ≥ 8 GB（如 RTX 3060） | RTX 3090 / 4090（24 GB） |
+| GPU | NVIDIA GPU，显存 ≥ 8 GB（如 RTX 3060） | RTX 5090（32 GB）/ RTX 4090（24 GB） |
 | CPU | 8 核 | 16 核 |
 | 内存 | 16 GB | 32 GB |
 | 磁盘 | 250 GB 可用空间（DOTA 原图 + 切片 + 输出） | 500 GB NVMe SSD |
-| CUDA | CUDA 11.7+ | CUDA 12.x |
-| 系统 | Ubuntu 20.04 / Windows 10+ | Ubuntu 22.04 |
+| CUDA | CUDA 11.7+ | CUDA 12.8+（Blackwell 架构需 12.8） |
+| 系统 | Ubuntu 20.04 / Windows 10+ | Ubuntu 22.04 / 24.04 |
 
-> 单算法单尺度训练（1024×1024 切片，batch_size=2）约占 7-8 GB 显存。6 个算法全部跑完预计需要 3-5 天（单卡 RTX 3090）。
+> 单算法单尺度训练（1024×1024 切片，batch_size=2）约占 7-8 GB 显存。6 个算法全部跑完预计需要 3-5 天（单卡 RTX 3090）/ 1-2 天（RTX 5090）。
 
 ---
 
@@ -30,15 +30,22 @@ conda create -n rotary python=3.10 -y
 conda activate rotary
 ```
 
-### Step 2: 安装 PyTorch（根据 CUDA 版本选择）
+### Step 2: 安装 PyTorch
+
+根据你的 GPU 架构选择对应版本：
 
 ```bash
-# CUDA 11.8
-pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu118
+# RTX 5090 (Blackwell) / RTX 50 系列 — 需要 CUDA 12.8 + PyTorch 2.6+
+pip install torch==2.6.0 torchvision==0.21.0 --index-url https://download.pytorch.org/whl/cu128
 
-# CUDA 12.1
-pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu121
+# RTX 4090 / RTX 40 系列 — CUDA 12.4
+pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu124
+
+# RTX 3090 / RTX 30 系列 — CUDA 11.8
+pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu118
 ```
+
+> RTX 5090 用户注意：需要 NVIDIA 驱动 ≥ 570，且必须使用 CUDA 12.8 以上。安装前先执行 `nvidia-smi` 确认驱动版本。
 
 ### Step 3: 安装 MMRotate 及依赖
 
@@ -48,7 +55,6 @@ mim install mmengine
 mim install "mmcv>=2.0.0"
 mim install "mmdet>=3.0.0"
 
-# 克隆 MMRotate（1.x 分支，基于 mmdet 2.x）
 git clone -b 1.x https://github.com/open-mmlab/mmrotate.git
 cd mmrotate
 pip install -v -e .
@@ -71,8 +77,8 @@ rt doctor --strict
 
 ## Quick Start
 
-```powershell
-python -m pip install -e .[dev]
+```bash
+pip install -e ".[dev]"
 rt doctor --strict
 rt algorithms
 rt train --experiment configs/experiments/roi_trans_r50_dota1.yaml --dry-run
@@ -80,10 +86,10 @@ rt data validate --root data/raw/DOTA-v1.0
 rt report --dry-run
 ```
 
-真实训练前需要另外准备 MMRotate 环境，并设置 `MMROTATE_ROOT` 或传入 `--backend-root`：
+真实训练前需设置 `MMROTATE_ROOT`：
 
-```powershell
-$env:MMROTATE_ROOT="E:\path\to\mmrotate"
+```bash
+export MMROTATE_ROOT=/path/to/mmrotate
 rt train --experiment configs/experiments/roi_trans_r50_dota1.yaml
 ```
 
@@ -93,7 +99,21 @@ rt train --experiment configs/experiments/roi_trans_r50_dota1.yaml
 
 ### 1. 数据准备
 
-从 [DOTA 官网](https://captain-whu.github.io/DOTA/dataset.html) 下载 DOTA v1.0 数据集，解压到以下结构：
+从 [DOTA 官网](https://captain-whu.github.io/DOTA/dataset.html) 下载 DOTA v1.0 数据集：
+
+| 文件 | 下载地址 |
+|------|----------|
+| 训练集图像 | https://captain-whu.github.io/DOTA/dataset.html （Google Drive / Baidu Pan） |
+| 训练集标注 | 同上页面，选择 Train set labelTxt |
+| 验证集图像 | 同上页面，选择 Val set images |
+| 验证集标注 | 同上页面，选择 Val set labelTxt |
+| 测试集图像 | 同上页面，选择 Test set images |
+
+> 百度网盘备用链接：https://pan.baidu.com/s/1BtrWnAFHkiVFipNn7FAGhA （见官网页面获取提取码）
+>
+> Google Drive 备用：https://drive.google.com/drive/folders/1UdlgJz1uEhKsValSQ_i3mrLgBIhgojam
+
+下载后解压到以下结构：
 
 ```
 data/raw/DOTA-v1.0/
