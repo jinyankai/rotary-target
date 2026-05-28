@@ -84,7 +84,7 @@ pip install -e ".[dev]"
 rt doctor --strict
 rt algorithms
 rt train --experiment configs/experiments/roi_trans_r50_dota1.yaml --dry-run
-rt data validate --root data/raw/DOTA-v1.0
+rt data validate --root ~/autodl-pub/DOTA
 rt report --dry-run
 ```
 
@@ -118,13 +118,13 @@ rt train --experiment configs/experiments/roi_trans_r50_dota1.yaml
 下载后解压到以下结构：
 
 ```
-data/raw/DOTA-v1.0/
+~/autodl-pub/DOTA/
 ├── train/
 │   ├── images/
-│   └── labelTxt/
+│   └── labelTxt-v1.0/
 ├── val/
 │   ├── images/
-│   └── labelTxt/
+│   └── labelTxt-v1.0/
 └── test/
     └── images/
 ```
@@ -132,7 +132,7 @@ data/raw/DOTA-v1.0/
 验证数据完整性：
 
 ```bash
-rt data validate --root data/raw/DOTA-v1.0
+rt data validate --root ~/autodl-pub/DOTA
 ```
 
 ### 2. 图像切片
@@ -141,7 +141,7 @@ DOTA 原图尺寸过大（最大 4000×4000），需切成 1024×1024 的子图�
 
 ```bash
 export MMROTATE_ROOT=/path/to/mmrotate
-rt data split-dota --raw-root data/raw/DOTA-v1.0 \
+rt data split-dota --raw-root ~/autodl-pub/DOTA \
                    --out-root data/processed/DOTA-v1.0/split_ss_1024_200 \
                    --tile-size 1024 --gap 200
 ```

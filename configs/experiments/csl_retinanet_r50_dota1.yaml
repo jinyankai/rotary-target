@@ -3,7 +3,7 @@ adapter: mmrotate
 algorithm: csl
 dataset:
   name: DOTA-v1.0
-  root: data/raw/DOTA-v1.0
+  root: ~/autodl-pub/DOTA
   split_root: data/processed/DOTA-v1.0/split_ss_1024_200
 training:
   epochs: 12

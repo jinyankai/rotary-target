@@ -114,20 +114,30 @@ def validate_dota_root(root: str | Path, *, max_label_files: int = 50) -> DotaVa
 
     expected_dirs = [
         root_path / "train" / "images",
-        root_path / "train" / "labelTxt",
         root_path / "val" / "images",
-        root_path / "val" / "labelTxt",
         root_path / "test" / "images",
     ]
     for directory in expected_dirs:
         if not directory.exists():
             report.errors.append(f"Missing expected DOTA directory: {directory}")
 
-    label_dirs = [root_path / "train" / "labelTxt", root_path / "val" / "labelTxt"]
+    label_dir_names = ["labelTxt-v1.0", "labelTxt"]
+    label_dirs: list[Path] = []
+    for split in ["train", "val"]:
+        for name in label_dir_names:
+            candidate = root_path / split / name
+            if candidate.exists():
+                label_dirs.append(candidate)
+                break
+        else:
+            report.errors.append(
+                f"Missing label directory under {root_path / split} "
+                f"(looked for: {', '.join(label_dir_names)})"
+            )
+
     label_files: list[Path] = []
     for label_dir in label_dirs:
-        if label_dir.exists():
-            label_files.extend(sorted(label_dir.glob("*.txt")))
+        label_files.extend(sorted(label_dir.glob("*.txt")))
 
     if not label_files:
         report.errors.append("No DOTA labelTxt files found under train/val.")

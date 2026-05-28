@@ -3,7 +3,7 @@ adapter: mmrotate
 algorithm: adaptive_gwd_kld
 dataset:
   name: DOTA-v1.0
-  root: data/raw/DOTA-v1.0
+  root: ~/autodl-pub/DOTA
   split_root: data/processed/DOTA-v1.0/split_ss_1024_200
 evaluation:
   metric: mAP

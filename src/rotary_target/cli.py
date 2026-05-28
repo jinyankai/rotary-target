@@ -30,7 +30,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     doctor = subparsers.add_parser("doctor", help="Check local scaffold, optional deps, CUDA, and data")
-    doctor.add_argument("--data-root", default="data/raw/DOTA-v1.0")
+    doctor.add_argument("--data-root", default="~/autodl-pub/DOTA")
     doctor.add_argument("--strict", action="store_true")
     doctor.add_argument("--json", action="store_true", dest="as_json")
     doctor.set_defaults(func=cmd_doctor)
@@ -41,13 +41,13 @@ def build_parser() -> argparse.ArgumentParser:
     data = subparsers.add_parser("data", help="Dataset helpers")
     data_subparsers = data.add_subparsers(dest="data_command", required=True)
     validate = data_subparsers.add_parser("validate", help="Validate a DOTA v1.0 root")
-    validate.add_argument("--root", default="data/raw/DOTA-v1.0")
+    validate.add_argument("--root", default="~/autodl-pub/DOTA")
     validate.add_argument("--max-files", type=int, default=50)
     validate.add_argument("--json", action="store_true", dest="as_json")
     validate.set_defaults(func=cmd_data_validate)
 
     split = data_subparsers.add_parser("split-dota", help="Prepare a DOTA split command")
-    split.add_argument("--raw-root", default="data/raw/DOTA-v1.0")
+    split.add_argument("--raw-root", default="~/autodl-pub/DOTA")
     split.add_argument("--out-root", default="data/processed/DOTA-v1.0/split_ss_1024_200")
     split.add_argument("--tile-size", type=int, default=1024)
     split.add_argument("--gap", type=int, default=200)
@@ -91,7 +91,8 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
-    report = run_doctor(args.data_root, strict=args.strict)
+    data_root = str(Path(args.data_root).expanduser())
+    report = run_doctor(data_root, strict=args.strict)
     if args.as_json:
         print(json.dumps(report.to_dict(), ensure_ascii=False, indent=2))
     else:
@@ -110,7 +111,8 @@ def cmd_algorithms(args: argparse.Namespace) -> int:
 
 
 def cmd_data_validate(args: argparse.Namespace) -> int:
-    report = validate_dota_root(args.root, max_label_files=args.max_files)
+    root = str(Path(args.root).expanduser())
+    report = validate_dota_root(root, max_label_files=args.max_files)
     if args.as_json:
         payload = {
             "root": str(report.root),
