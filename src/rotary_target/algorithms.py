@@ -62,6 +62,14 @@ MMROTATE_ALGORITHMS: dict[str, AlgorithmSpec] = {
         angle_version="oc",
         paper_hint="NeurIPS 2021",
     ),
+    "adaptive_gwd_kld": AlgorithmSpec(
+        key="adaptive_gwd_kld",
+        display_name="Adaptive GWD-KLD Hybrid",
+        family="gaussian_loss",
+        upstream_config="adaptive_gwd_kld_retinanet_r50_fpn_1x_dota_oc.py",
+        angle_version="oc",
+        paper_hint="Custom (aspect-ratio adaptive fusion of GWD and KLD)",
+    ),
 }
 
 

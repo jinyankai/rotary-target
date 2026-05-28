@@ -76,6 +76,17 @@ def build_parser() -> argparse.ArgumentParser:
     report.add_argument("--dry-run", action="store_true")
     report.set_defaults(func=cmd_report)
 
+    ensemble = subparsers.add_parser("ensemble", help="Fuse predictions from multiple models (OWBF)")
+    ensemble.add_argument("--predictions", nargs="+", required=True,
+                          help="Paths to prediction JSON files from different models")
+    ensemble.add_argument("--weights", nargs="*", type=float,
+                          help="Model weights (uniform if omitted)")
+    ensemble.add_argument("--iou-threshold", type=float, default=0.5)
+    ensemble.add_argument("--score-threshold", type=float, default=0.05)
+    ensemble.add_argument("--output", default="outputs/ensemble/fused_predictions.json")
+    ensemble.add_argument("--dry-run", action="store_true")
+    ensemble.set_defaults(func=cmd_ensemble)
+
     return parser
 
 
@@ -187,6 +198,47 @@ def cmd_report(args: argparse.Namespace) -> int:
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(markdown, encoding="utf-8")
     print(f"Wrote {output}")
+    return 0
+
+
+def cmd_ensemble(args: argparse.Namespace) -> int:
+    from rotary_target.ensemble import FusionConfig, OrientedBoxFusion, load_predictions, save_predictions
+    from rotary_target.ensemble.io import Prediction
+
+    if args.dry_run:
+        print(f"ensemble: would fuse {len(args.predictions)} prediction files")
+        for p in args.predictions:
+            print(f"  - {p}")
+        print(f"iou_threshold: {args.iou_threshold}")
+        print(f"score_threshold: {args.score_threshold}")
+        print(f"output: {args.output}")
+        print("dry-run: no fusion performed.")
+        return 0
+
+    model_preds: list[list[Prediction]] = []
+    for pred_path in args.predictions:
+        path = Path(pred_path)
+        if not path.exists():
+            print(f"error: prediction file not found: {path}", file=sys.stderr)
+            return 2
+        model_preds.append(load_predictions(path))
+
+    config = FusionConfig(
+        iou_threshold=args.iou_threshold,
+        score_threshold=args.score_threshold,
+    )
+    fusion = OrientedBoxFusion(config)
+    fused = fusion.fuse(model_preds, model_weights=args.weights)
+
+    from rotary_target.ensemble.io import Prediction as Pred
+    out_preds = [
+        Pred(cx=f.cx, cy=f.cy, w=f.w, h=f.h, theta=f.theta, score=f.score, class_id=f.class_id)
+        for f in fused
+    ]
+    out_path = save_predictions(out_preds, args.output)
+    total_input = sum(len(p) for p in model_preds)
+    print(f"Fused {total_input} predictions from {len(model_preds)} models -> {len(fused)} boxes")
+    print(f"Wrote {out_path}")
     return 0
 
 

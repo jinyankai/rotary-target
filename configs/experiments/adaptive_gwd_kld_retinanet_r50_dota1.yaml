@@ -1,0 +1,18 @@
+experiment_name: adaptive_gwd_kld_retinanet_r50_dota1
+adapter: mmrotate
+algorithm: adaptive_gwd_kld
+dataset:
+  name: DOTA-v1.0
+  root: data/raw/DOTA-v1.0
+  split_root: data/processed/DOTA-v1.0/split_ss_1024_200
+training:
+  epochs: 12
+  gpus: 1
+  launcher: none
+  work_dir: outputs/mmrotate/adaptive_gwd_kld_retinanet_r50_dota1
+  config: configs/mmrotate/adaptive_gwd_kld_retinanet_r50_fpn_1x_dota_oc.py
+evaluation:
+  metric: mAP
+  checkpoint: outputs/mmrotate/adaptive_gwd_kld_retinanet_r50_dota1/latest.pth
+report:
+  group: innovations
