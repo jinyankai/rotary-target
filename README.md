@@ -52,14 +52,16 @@ pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorc
 ```bash
 pip install -U openmim
 mim install mmengine
-mim install "mmcv>=2.0.0"
-mim install "mmdet>=3.0.0"
+mim install "mmcv>=2.0.0,<2.2.0"
+mim install "mmdet>=3.0.0,<3.4.0"
 
 git clone -b 1.x https://github.com/open-mmlab/mmrotate.git
 cd mmrotate
 pip install -v -e .
 cd ..
 ```
+
+> 版本约束说明：mmdet 3.3.0 要求 mmcv < 2.2.0，务必按上述范围安装避免冲突。
 
 ### Step 4: 安装本项目
 
