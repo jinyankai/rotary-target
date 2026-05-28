@@ -19,7 +19,7 @@ def test_train_dry_run_prints_mmrotate_command(capsys):
     )
     captured = capsys.readouterr()
     assert exit_code == 0
-    assert "roi_trans_r50_fpn_1x_dota_le90.py" in captured.out
+    assert "roi-trans-le90_r50_fpn_1x_dota.py" in captured.out
     assert "dry-run" in captured.out
 
 
