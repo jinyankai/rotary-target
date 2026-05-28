@@ -84,7 +84,7 @@ pip install -e ".[dev]"
 rt doctor --strict
 rt algorithms
 rt train --experiment configs/experiments/roi_trans_r50_dota1.yaml --dry-run
-rt data validate --root ~/autodl-pub/DOTA
+rt data validate --root ~/autodl-tmp/DOTA
 rt report --dry-run
 ```
 
@@ -115,24 +115,41 @@ rt train --experiment configs/experiments/roi_trans_r50_dota1.yaml
 >
 > Google Drive 备用：https://drive.google.com/drive/folders/1UdlgJz1uEhKsValSQ_i3mrLgBIhgojam
 
-下载后解压到以下结构：
+**AutoDL 用户**：`/autodl-pub/DOTA` 为只读共享盘，需将标注解压到数据盘：
+
+```bash
+mkdir -p ~/autodl-tmp/DOTA/{train,val,test}
+
+# 图片软链接（不额外占空间）
+ln -s /root/autodl-pub/DOTA/train/images ~/autodl-tmp/DOTA/train/images
+ln -s /root/autodl-pub/DOTA/val/images ~/autodl-tmp/DOTA/val/images
+ln -s /root/autodl-pub/DOTA/test/images ~/autodl-tmp/DOTA/test/images 2>/dev/null
+
+# 标注解压到可写数据盘
+mkdir -p ~/autodl-tmp/DOTA/train/labelTxt-v1.0
+unzip /root/autodl-pub/DOTA/train/labelTxt-v1.0/labelTxt.zip -d ~/autodl-tmp/DOTA/train/labelTxt-v1.0/
+mkdir -p ~/autodl-tmp/DOTA/val/labelTxt-v1.0
+unzip /root/autodl-pub/DOTA/val/labelTxt-v1.0/labelTxt.zip -d ~/autodl-tmp/DOTA/val/labelTxt-v1.0/
+```
+
+最终目录结构：
 
 ```
-~/autodl-pub/DOTA/
+~/autodl-tmp/DOTA/
 ├── train/
-│   ├── images/
-│   └── labelTxt-v1.0/
+│   ├── images/        -> /root/autodl-pub/DOTA/train/images (symlink)
+│   └── labelTxt-v1.0/ (解压后的 .txt 文件)
 ├── val/
-│   ├── images/
+│   ├── images/        -> /root/autodl-pub/DOTA/val/images (symlink)
 │   └── labelTxt-v1.0/
 └── test/
-    └── images/
+    └── images/        -> /root/autodl-pub/DOTA/test/images (symlink)
 ```
 
 验证数据完整性：
 
 ```bash
-rt data validate --root ~/autodl-pub/DOTA
+rt data validate --root ~/autodl-tmp/DOTA
 ```
 
 ### 2. 图像切片
@@ -141,7 +158,7 @@ DOTA 原图尺寸过大（最大 4000×4000），需切成 1024×1024 的子图�
 
 ```bash
 export MMROTATE_ROOT=/path/to/mmrotate
-rt data split-dota --raw-root ~/autodl-pub/DOTA \
+rt data split-dota --raw-root ~/autodl-tmp/DOTA \
                    --out-root data/processed/DOTA-v1.0/split_ss_1024_200 \
                    --tile-size 1024 --gap 200
 ```
